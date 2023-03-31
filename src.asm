@@ -1,26 +1,82 @@
 ORG 0H
 LJMP MAIN
 
+ORG 0023H ;serial interrupt
+LJMP SERIAL
+RETI
+
 ;PROGRAM
 MAIN:
+	ACALL CONSTANTS
 	ACALL LCD_SETUP
+	ACALL INTERRUPTS
+	ACALL UART_SETUP
 	MOV R1, #30H
 
 START:		;writes characters to the LCD
 	MOV A, @R1
-	JZ FINISH
+	JZ QUIT
 	ACALL LCD_WRITE_CHAR
 	INC R1
 	JMP START
 
-FINISH:
+QUIT:
 	JMP $
 
 ;8051 SETUP INSTRUCTIONS
-;DEFINE CONSTANTS
-LCD_SETUP:
-	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
 
+INTERRUPTS:
+	MOV IE, #90H
+
+UART_SETUP:
+	CLR SM0		;|
+	SETB SM1	;|put serial port in 8 bit UART mode
+
+	SETB REN	;|enable serial port reciever 
+
+	MOV A, PCON	;|
+	SETB ACC.7	;|
+	MOV PCON, A	;| set SMOD in PCON to double baud rate
+
+	MOV TMOD, #20H	;set timer 1 in mode 2, 8 bit reload
+	MOV TH1, #243	;set to -13 so that it resets every 13us												|
+	MOV TL1, #243	;set the low bit to -13 as well so that it will reset after 13us on the first iteration	|this sets the baud rate to 4800
+	SETB TR1		;start timer 1
+
+	RET
+
+SERIAL:
+	MOV R1, #UART_DATA
+	MOV R0, #UART_DATA
+RECEIVE:
+	JNB RI, SEND
+	CLR RI
+	MOV A, SBUF
+	CJNE A, #0DH, SKIP
+	JMP SEND
+SKIP:
+	MOV @R1, A
+	INC R1
+	JMP RECEIVE
+SEND:
+	MOV @R0, A
+	JZ FINISH
+	MOV SBUF, A
+	INC R0
+	JNB TI, $
+	CLR TI
+	SETB RI
+	JMP RECEIVE
+
+FINISH:
+	RET
+
+CONSTANTS:
+	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
+	UART_DATA EQU 64
+
+LCD_SETUP:
+	
 	CLR P0.7 ; TURN 7 SEGMENT DISPLAYS OFF
 	;LCD P1, P1.2 = ENABLE, P1.3 = REGISTER SELECT
 	;LCD IS A HD44780
