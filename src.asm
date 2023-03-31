@@ -1,24 +1,29 @@
 ORG 0H
+LJMP MAIN
+
+;PROGRAM
+MAIN:
+	ACALL LCD_SETUP
+	MOV R1, #30H
+
+START:		;writes characters to the LCD
+	MOV A, @R1
+	JZ FINISH
+	ACALL LCD_WRITE_CHAR
+	INC R1
+	JMP START
+
+FINISH:
+	JMP $
+
 ;8051 SETUP INSTRUCTIONS
-
 ;DEFINE CONSTANTS
-
+LCD_SETUP:
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
 
 	CLR P0.7 ; TURN 7 SEGMENT DISPLAYS OFF
 	;LCD P1, P1.2 = ENABLE, P1.3 = REGISTER SELECT
 	;LCD IS A HD44780
-
-;DATA LOADED INTO MEMORY TO BE DISPLAYED
-	MOV 30H, #'M'
-	MOV 31H, #'S'
-	MOV 32H, #'E'
-	MOV 33H, #'3'
-	MOV 34H, #'5'
-	MOV 35H, #'2'
-	MOV 36H, #0
-	
-
 
 ;LCD 4 BIT MODE SELECT
 
@@ -65,7 +70,6 @@ ORG 0H
 
 	CALL LCD_DELAY		; wait for BF to clear
 
-
 ; display on/off control
 ; the display is turned on, the cursor is turned on and blinking is turned on
 	CLR P1.7		; |
@@ -87,22 +91,9 @@ ORG 0H
 	CALL LCD_DELAY		; wait for BF to clear
 
 	SETB P1.3
+	RET
 
 ;LCD READY FOR DATA INPUT
-
-;PROGRAM
-
-	MOV R1, #30H
-
-START:
-	MOV A, @R1
-	JZ FINISH
-	ACALL LCD_WRITE_CHAR
-	INC R1
-	JMP START
-
-FINISH:
-	JMP $
 
 LCD_WRITE_CHAR:
 		MOV C, ACC.7
