@@ -1,9 +1,13 @@
 ORG 0H
 LJMP MAIN
 
+ORG 0023H ;serial interrupt
+
+
 ;PROGRAM
 MAIN:
 	ACALL LCD_SETUP
+	ACALL UART_SETUP
 	MOV R1, #30H
 
 START:		;writes characters to the LCD
@@ -18,6 +22,22 @@ FINISH:
 
 ;8051 SETUP INSTRUCTIONS
 ;DEFINE CONSTANTS
+
+UART_SETUP:
+	CLR SM0		;|
+	SETB SM1	;|put serial port in 8 bit UART mode
+
+	MOV A, PCON	;|
+	SETB ACC.7	;|
+	MOV PCON, A	;| set SMOD in PCON to double baud rate
+
+	MOV TMOD, #20H	;set timer 1 in mode 2, 8 bit reload
+	MOV TH1, #243	;set to -13 so that it resets every 13us
+	MOV TL1, #243	;set the low bit to -13 as well so that it will reset after 13us on the first iteration
+	SETB TR1		;start timer 1
+
+	RET
+
 LCD_SETUP:
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
 
