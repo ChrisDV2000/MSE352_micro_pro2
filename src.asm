@@ -8,8 +8,8 @@ RETI
 ;PROGRAM
 MAIN:
 	ACALL CONSTANTS
-	ACALL LCD_SETUP
 	ACALL INTERRUPTS
+	ACALL LCD_SETUP
 	ACALL UART_SETUP
 	MOV R1, #30H
 
@@ -22,6 +22,8 @@ START:		;writes characters to the LCD
 
 QUIT:
 	JMP $
+
+;------------End of Main-------------
 
 ;8051 SETUP INSTRUCTIONS
 
@@ -73,111 +75,113 @@ FINISH:
 
 CONSTANTS:
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
-	UART_DATA EQU 64
+	UART_DATA EQU 64 ; where recieved UART data is stored in ram
+	RS EQU P1.3
+	E EQU P1.2
 
 LCD_SETUP:
-	
-	CLR P0.7 ; TURN 7 SEGMENT DISPLAYS OFF
 	;LCD P1, P1.2 = ENABLE, P1.3 = REGISTER SELECT
 	;LCD IS A HD44780
+	
+	CLR P0.7 ; TURN 7 SEGMENT DISPLAYS OFF
 
-;LCD 4 BIT MODE SELECT
+	CLR RS		; clear RS - indicates that instructions are being sent to the module
 
-	CLR P1.3		; clear RS - indicates that instructions are being sent to the module
+	CALL FUNCTION_SET; 	function set	to 4 bit mode
+	CALL ENTRY_MODE;	entry mode set - shift cursor to the right
+	CALL DISP_CON; 		turn display and cursor on/off
 
-; function set	
+	RET ;LCD READY FOR DATA INPUT
+
+FUNCTION_SET:
 	CLR P1.7		; |
 	CLR P1.6		; |
 	SETB P1.5		; |
 	CLR P1.4		; | high nibble set
 
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
+	CALL LCD_CLOCK
 
 	CALL LCD_DELAY		; wait for BF to clear	
 
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
-					; same function set high nibble sent a second time
+	CALL LCD_CLOCK ; same function set high nibble sent a second time
 
 	SETB P1.7		; low nibble set (only P1.7 needed to be changed)
 
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
+	CALL LCD_CLOCK
 
 	CALL LCD_DELAY		; wait for BF to clear
+	RET
 
-
-; entry mode set
-; set to increment with no shift
+DISP_CON:
+	; display on/off control
+	; the display is turned on, the cursor is turned on and blinking is turned on
 	CLR P1.7		; |
 	CLR P1.6		; |
 	CLR P1.5		; |
 	CLR P1.4		; | high nibble set
 
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
-
-	SETB P1.6		; |
-	SETB P1.5		; |low nibble set
-
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
-
-	CALL LCD_DELAY		; wait for BF to clear
-
-; display on/off control
-; the display is turned on, the cursor is turned on and blinking is turned on
-	CLR P1.7		; |
-	CLR P1.6		; |
-	CLR P1.5		; |
-	CLR P1.4		; | high nibble set
-
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
+	CALL LCD_CLOCK
 
 	SETB P1.7		; |
 	SETB P1.6		; |
 	SETB P1.5		; |
 	SETB P1.4		; | low nibble set
 
-	SETB P1.2		; |
-	CLR P1.2		; | negative edge on E
+	CALL LCD_CLOCK
 
 	CALL LCD_DELAY		; wait for BF to clear
 
-	SETB P1.3
+	SETB RS
 	RET
 
-;LCD READY FOR DATA INPUT
+ENTRY_MODE:
+	; entry mode set
+	; set to increment with no shift
+	CLR P1.7		; |
+	CLR P1.6		; |
+	CLR P1.5		; |
+	CLR P1.4		; | high nibble set
+
+	CALL LCD_CLOCK
+
+	SETB P1.6		; |
+	SETB P1.5		; |low nibble set
+
+	CALL LCD_CLOCK
+
+	CALL LCD_DELAY		; wait for BF to clear
+	RET
+
+LCD_CLOCK:
+	SETB E		; |
+	CLR E		; | negative edge on E
+	RET
 
 LCD_WRITE_CHAR:
-		MOV C, ACC.7
-		MOV P1.7, C 
-		MOV C, ACC.6
-		MOV P1.6, C 
-		MOV C, ACC.5
-		MOV P1.5, C 
-		MOV C, ACC.4
-		MOV P1.4, C
+	MOV C, ACC.7
+	MOV P1.7, C 
+	MOV C, ACC.6
+	MOV P1.6, C 
+	MOV C, ACC.5
+	MOV P1.5, C 
+	MOV C, ACC.4
+	MOV P1.4, C
 
-		SETB P1.2
-		CLR P1.2
+	CALL LCD_CLOCK
 
-		MOV C, ACC.3
-		MOV P1.7, C 
-		MOV C, ACC.2
-		MOV P1.6, C 
-		MOV C, ACC.1
-		MOV P1.5, C 
-		MOV C, ACC.0
-		MOV P1.4, C
+	MOV C, ACC.3
+	MOV P1.7, C 
+	MOV C, ACC.2
+	MOV P1.6, C 
+	MOV C, ACC.1
+	MOV P1.5, C 
+	MOV C, ACC.0
+	MOV P1.4, C
 
-		SETB P1.2
-		CLR P1.2
+	CALL LCD_CLOCK
 
-		ACALL LCD_DELAY
-		RET
+	ACALL LCD_DELAY
+	RET
 
 LCD_DELAY:
 		MOV R0, #BUSY_FLAG_TIME
