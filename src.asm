@@ -11,6 +11,7 @@ MAIN:
 	ACALL INTERRUPTS
 	ACALL LCD_SETUP
 	ACALL UART_SETUP
+	ACALL KEY_PAD_ENTRY
 	MOV R1, #30H
 
 START:		;writes characters to the LCD
@@ -92,6 +93,33 @@ LCD_SETUP:
 	CALL DISP_CON; 		turn display and cursor on/off
 
 	RET ;LCD READY FOR DATA INPUT
+
+KEY_PAD_ENTRY:
+	CLR P0.3		;clear row 3
+	CALL ID_CODE_0	;call function to scan row
+	SETB P0.3		;set row 3
+	JB F0, DONE		;if F0 is set end scan
+
+	CLR P0.2		;clear row 2
+	CALL ID_CODE_1	;call function to scan row
+	SETB P0.2		;set row 3
+	JB F0, DONE		;if F0 is set end scan
+	
+	CLR P0.1		;clear row 3
+	CALL ID_CODE_2	;call function to scan row
+	SETB P0.1		;set row 3
+	JB F0, DONE		;if F0 is set end scan
+	
+	CLR P0.0		;clear row 3
+	CALL ID_CODE_3	;call function to scan row
+	SETB P0.0		;set row 3
+	JB F0, DONE		;if F0 is set end scan
+
+	JMP KEY_PAD_ENTRY
+
+DONE:
+	CLR F0			;clear F0 flag before exit
+	RET
 
 FUNCTION_SET:
 	CLR P1.7		; |
@@ -184,7 +212,91 @@ LCD_WRITE_CHAR:
 	RET
 
 LCD_DELAY:
-		MOV R0, #BUSY_FLAG_TIME
-		DJNZ R0, $
-		RET
+	MOV R0, #BUSY_FLAG_TIME
+	DJNZ R0, $
+	RET
+
+ID_CODE_0:
+	JNB P0.4, KEY_CODE_03	;key found if col 0 and row 3 is cleared
+	JNB P0.5, KEY_CODE_13	;key found if col 1 and row 3 is cleared
+	JNB P0.6, KEY_CODE_23	;key found if col 2 and row 3 is cleared
+	RET
+
+KEY_CODE_03:
+	SETB F0				;key found: set F0
+	MOV R7, #'3'		;code displayed '3'
+	RET
+
+KEY_CODE_13:
+	SETB f0				;key found: set f0
+	MOV R7, #'2'		;code displayed '2'
+	RET
+
+KEY_CODE_23:
+	SETB F0				;key found: set F0
+	MOV R7, #'1'		;code displayed '1'
+	RET
+
+ID_CODE_1:
+	JNB P0.4, KEY_CODE_02	;key found if col 0 and row 2 is cleared
+	JNB P0.5, KEY_CODE_12	;key found if col 1 and row 2 is cleared
+	JNb P0.6, KEY_CODE_22 ;Key found if col 2 and row 2 is cleared
+	RET
+
+KEY_CODE_02:
+	SETB F0				;key found: set F0
+	MOV R7, #'6'		;code displayed '6'
+	RET
+
+KEY_CODE_12:
+	SETB F0				;key found: set F0
+	MOV R7, #'5'		;code displayed '5'
+	RET
+
+KEY_CODE_22:
+	SETB F0				;key found: set F0
+	MOV R7, #'4'		;code displayed '4'
+	RET
+
+ID_CODE_2:
+	JNB P0.4, KEY_CODE_01	;key found if col 0 and row 1 is cleared
+	JNB P0.5, KEY_CODE_11	;key found if col 1 and row 1 is cleared
+	JNB P0.6, KEY_CODE_21	;key found if col 2 and row 1 is cleared
+	RET
+
+KEY_CODE_01:
+	SETB F0				;key found: set F0
+	MOV R7, #'9'		;code displayed '9'
+	RET
+
+KEY_CODE_11:
+	SETB F0				;key found: set F0
+	MOV R7, #'8'		;code displayed '8'
+	RET
+
+KEY_CODE_21:
+	SETB F0				;key found: set F0
+	MOV R7, #'7'		;code displayed '7'
+	RET
+
+ID_CODE_3:
+	JNB P0.4, KEY_CODE_00 ;key found if col 0 and row 0 is cleared
+	JNB P0.5, KEY_CODE_10	;key found of col 1 and row 0 is cleared
+	JNB P0.6, KEY_CODE_20	;key found of col 2 and row 0 is cleared 
+	RET
+
+KEY_CODE_00:
+	SETB F0				;key found: set F0
+	MOV R7, #'#'		;code displayed '#'
+	RET
+
+KEY_CODE_10:
+	SETB F0				;key found: set F0
+	MOV R7, #'0'		;code displayed '0'
+	RET
+
+KEY_CODE_20:
+	SETB F0				;key found: set F0
+	MOV R7, #'*'		;code displayed '*'
+	RET
 END
