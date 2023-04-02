@@ -44,8 +44,8 @@ UART_SETUP:
 	MOV PCON, A	;| set SMOD in PCON to double baud rate
 
 	MOV TMOD, #20H	;set timer 1 in mode 2, 8 bit reload
-	MOV TH1, #243	;set to -13 so that it resets every 13us												|
-	MOV TL1, #243	;set the low bit to -13 as well so that it will reset after 13us on the first iteration	|this sets the baud rate to 4800
+	MOV TH1, #253	;set to -13 so that it resets every 13us												|
+	MOV TL1, #253	;set the low bit to -13 as well so that it will reset after 13us on the first iteration	|this sets the baud rate to 4800
 	SETB TR1		;start timer 1
 
 	RET
