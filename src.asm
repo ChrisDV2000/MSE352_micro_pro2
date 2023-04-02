@@ -7,13 +7,14 @@ RETI
 
 ;PROGRAM
 MAIN:
-	ACALL CONSTANTS		;setup constants
+	ACALL CONSTANTS		;setup constants and data
 	ACALL INTERRUPTS	;setup interrupts
 	ACALL LCD_SETUP		;setup LCD display
 	ACALL UART_SETUP	;setup UART
+	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
+	ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
 	MOV P1, #0FFH		;make sure all of the LEDs are off
 	ACALL LED_ANIMATION	;do a 5 second LED animation
-	ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
 	MOV R1, #30H		;set R1 to be the RAM location 30H
 
 START:		;writes characters to the LCD
@@ -81,6 +82,10 @@ CONSTANTS:
 	UART_DATA EQU 64 ; where recieved UART data is stored in ram
 	RS EQU P1.3
 	E EQU P1.2
+	START_STR: DB 'E','n','t','e','r',' ','P','a','s','s','c','o','d','e',0DH,0
+	ACCESS_STR: DB 'A','c','c','e','s','s',' ','G','r','a','n','t','e','d',0DH,0
+	DENIED_STR: DB 'A','c','c','e','s','s',' ','D','e','n','i','e','d',0DH,0
+	LOCK_STR: DB 'L','O','C','K',' ','D','O','W','N',0DH,0
 
 LCD_SETUP:
 	;LCD P1, P1.2 = ENABLE, P1.3 = REGISTER SELECT
@@ -95,6 +100,9 @@ LCD_SETUP:
 	CALL DISP_CON; 		turn display and cursor on/off
 
 	RET ;LCD READY FOR DATA INPUT
+
+STARTUP:
+	
 
 KEY_PAD_ENTRY:
 	CLR P0.3		;clear row 3
