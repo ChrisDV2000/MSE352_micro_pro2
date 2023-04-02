@@ -80,6 +80,13 @@ LCD_SETUP:
 
 	RET ;LCD READY FOR DATA INPUT
 
+CLEAR_LCD:
+	CLR RS
+	MOV A, #1
+	ACALL LCD_WRITE_CHAR
+	SETB RS
+	RET
+
 STARTUP:
 	MOV DPTR, #START_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
@@ -88,6 +95,7 @@ STARTUP:
 	RET
 
 ACCESS_GRANTED:
+	ACALL CLEAR_LCD
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
@@ -95,6 +103,7 @@ ACCESS_GRANTED:
 	RET
 
 ACCESS_DENIED:
+	ACALL CLEAR_LCD
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
@@ -102,6 +111,7 @@ ACCESS_DENIED:
 	RET
 
 LOCK_DOWN:
+	ACALL CLEAR_LCD
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
