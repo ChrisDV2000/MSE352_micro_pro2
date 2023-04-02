@@ -7,31 +7,31 @@ RETI
 
 ;PROGRAM
 MAIN:
-	ACALL CONSTANTS
-	ACALL INTERRUPTS
-	ACALL LCD_SETUP
-	ACALL UART_SETUP
-	MOV P1, #0FFH
-	ACALL LED_ANIMATION
-	ACALL KEY_PAD_ENTRY
-	MOV R1, #30H
+	ACALL CONSTANTS		;setup constants
+	ACALL INTERRUPTS	;setup interrupts
+	ACALL LCD_SETUP		;setup LCD display
+	ACALL UART_SETUP	;setup UART
+	MOV P1, #0FFH		;make sure all of the LEDs are off
+	ACALL LED_ANIMATION	;do a 5 second LED animation
+	ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
+	MOV R1, #30H		;set R1 to be the RAM location 30H
 
 START:		;writes characters to the LCD
-	MOV A, @R1
-	JZ QUIT
-	ACALL LCD_WRITE_CHAR
-	INC R1
-	JMP START
+	MOV A, @R1				;move what is at the location in R1 to the accumulator
+	JZ QUIT					;runs an infinite loop if the accumulator is zero
+	ACALL LCD_WRITE_CHAR	;calls the function that writes characters to the LCD display
+	INC R1					;increments R1
+	JMP START				;goes back to the start of the loop
 
 QUIT:
-	JMP $
+	JMP $	;infinite loop
 
 ;------------End of Main-------------
 
 ;8051 SETUP INSTRUCTIONS
 
 INTERRUPTS:
-	MOV IE, #90H
+	MOV IE, #90H	;setup serial interupt
 
 UART_SETUP:
 	CLR SM0		;|
@@ -54,27 +54,27 @@ SERIAL:
 	MOV R1, #UART_DATA	;|
 	MOV R0, #UART_DATA	;| set beginning location in RAM
 RECEIVE:
-	JNB RI, SEND
-	CLR RI
-	MOV A, SBUF
-	CJNE A, #0DH, SKIP
-	JMP SEND
+	JNB RI, SEND			;if RI is not set jump to send
+	CLR RI					;if RI is set clear it 
+	MOV A, SBUF				;move the contents of SBUF into the accumulator
+	CJNE A, #0DH, SKIP		;compare A to #0DH (this is the end of transmission character) if they are the same jump to skip
+	SJMP SEND				;jump to send
 SKIP:
-	MOV @R1, A
-	INC R1
-	JMP RECEIVE
+	MOV @R1, A				;starting at the location in the accumulator
+	INC R1					;increment by 1
+	SJMP RECEIVE			;jump to receive
 SEND:
-	MOV @R0, A
-	JZ FINISH
-	MOV SBUF, A
-	INC R0
-	JNB TI, $
-	CLR TI
-	SETB RI
-	JMP RECEIVE
+	MOV @R0, A				;move the data in the accumulator into the location pointed to by R0
+	JZ FINISH				;the last value is sent so the function returns
+	MOV SBUF, A				;move the data in the accumulator into SBUF to be sent out by UART
+	INC R0					;increment the location where data is stored to the next RAM location
+	JNB TI, $				;loop until TI is set
+	CLR TI					;clear TI
+	SETB RI					;set RI
+	SJMP RECEIVE			;jump to receive data
 
 FINISH:
-	RET
+	RET						;return
 
 CONSTANTS:
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
@@ -189,7 +189,7 @@ LCD_CLOCK:
 	RET
 
 LED_ANIMATION:
-	CLR P1.7
+	CLR P1.7			;turn each LED on in turn from left to right
 	ACALL LED_DELAY
 	CLR P1.6
 	ACALL LED_DELAY
@@ -205,7 +205,7 @@ LED_ANIMATION:
 	ACALL LED_DELAY
 	CLR P1.0
 	ACALL LED_DELAY
-	MOV P1, #0FFH
+	MOV P1, #0FFH		;shut all of the LEDs off
 	RET
 
 LED_DELAY:	; 0.625 second delay
