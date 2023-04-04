@@ -180,10 +180,19 @@ ENTRY_MODE:
 	CALL LCD_DELAY		; wait for BF to clear
 	RET
 
+
 LCD_CLOCK:
 	SETB E		; |
 	CLR E		; | negative edge on E
 	RET
+
+LED_ANIMATION:
+		SETB P1.0
+		ACALL LED_DELAY
+		CLR P1.0
+		ACALL LED_DELAY
+		JMP LED_ANIMATION
+		RET
 
 LCD_WRITE_CHAR:
 	MOV C, ACC.7
