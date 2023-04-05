@@ -3,7 +3,6 @@ Org 0000h
 RS	Equ P1.3
 E	Equ P1.2
 
-
 ;Main Function
 Main:
 	Clr RS
@@ -26,7 +25,7 @@ Again:
 Next:
 	Mov R4, #00h	;counter for checking number of scans
 	Mov R5, #00h	;counter for checking the correctness of the pin
-	Mov DPTR, #LUT4	;calling the loop-up table 4
+	Mov DPTR, #LUT4	;calling the look-up table 4
 
 
 ;Entering the PIN on the keypad
@@ -37,10 +36,11 @@ Iterate:
 	Mov A, #'*'
 	Call SendChar	;Displaying '*' instead of the PIN
 
+;-----------------already moved--------------------------
 
 ;Checking for the correctness of the code
 	Clr A
-	Movc A, @A+DPTR	;loop-up table for the correct PIN
+	Movc A, @A+DPTR	;looK-up table for the correct PIN
 	Call CheckInput	;Function checking if each input is correct
 	Inc DPTR		
 	INC R4
