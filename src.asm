@@ -1,19 +1,23 @@
-ORG 0H
-LJMP MAIN
+ORG 1000H
+BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
+UART_DATA EQU 64 ; where recieved UART data is stored in ram
+RS EQU P1.3
+E EQU P1.2
+START_STR: DB 'E','n','t','e','r',' ','P','a','s','s','c','o','d','e',0DH,0
+ACCESS_STR: DB 'A','c','c','e','s','s',' ','G','r','a','n','t','e','d',0DH,0
+DENIED_STR: DB 'A','c','c','e','s','s',' ','D','e','n','i','e','d',0DH,0
+LOCK_STR: DB 'L','O','C','K',' ','D','O','W','N',0DH,0
 
-ORG 0023H ;serial interrupt
-LJMP SERIAL
-RETI
 
+ORG 30H
 ;PROGRAM
 MAIN:
-	ACALL CONSTANTS		;setup constants
-	ACALL INTERRUPTS	;setup interrupts
 	ACALL LCD_SETUP		;setup LCD display
 	ACALL UART_SETUP	;setup UART
+	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
+	;ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
 	MOV P1, #0FFH		;make sure all of the LEDs are off
 	ACALL LED_ANIMATION	;do a 5 second LED animation
-	ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
 	MOV R1, #30H		;set R1 to be the RAM location 30H
 
 START:		;writes characters to the LCD
@@ -29,10 +33,6 @@ QUIT:
 ;------------End of Main-------------
 
 ;8051 SETUP INSTRUCTIONS
-
-INTERRUPTS:
-	MOV IE, #90H	;setup serial interupt
-
 UART_SETUP:
 	CLR SM0		;|
 	SETB SM1	;|put serial port in 8 bit UART mode
@@ -44,43 +44,24 @@ UART_SETUP:
 	MOV PCON, A	;| set SMOD in PCON to double baud rate
 
 	MOV TMOD, #20H	;set timer 1 in mode 2, 8 bit reload
-	MOV TH1, #243	;set to -13 so that it resets every 13us												|
-	MOV TL1, #243	;set the low bit to -13 as well so that it will reset after 13us on the first iteration	|this sets the baud rate to 4800
+	MOV TH1, #253	;set to -13 so that it resets every 13us												|
+	MOV TL1, #253	;set the low bit to -13 as well so that it will reset after 13us on the first iteration	|this sets the baud rate to 4800
 	SETB TR1		;start timer 1
 
 	RET
 
 SERIAL:
-	MOV R1, #UART_DATA	;|
-	MOV R0, #UART_DATA	;| set beginning location in RAM
-RECEIVE:
-	JNB RI, SEND			;if RI is not set jump to send
-	CLR RI					;if RI is set clear it 
-	MOV A, SBUF				;move the contents of SBUF into the accumulator
-	CJNE A, #0DH, SKIP		;compare A to #0DH (this is the end of transmission character) if they are the same jump to skip
-	SJMP SEND				;jump to send
-SKIP:
-	MOV @R1, A				;starting at the location in the accumulator
-	INC R1					;increment by 1
-	SJMP RECEIVE			;jump to receive
-SEND:
-	MOV @R0, A				;move the data in the accumulator into the location pointed to by R0
-	JZ FINISH				;the last value is sent so the function returns
+	CLR A
+	MOVC A, @A + DPTR		;move the next character into the accumulator
+	INC DPTR				;increment the data pointer
+	JZ FINISH_SERIAL		;the last value is sent so the function returns
 	MOV SBUF, A				;move the data in the accumulator into SBUF to be sent out by UART
-	INC R0					;increment the location where data is stored to the next RAM location
-	JNB TI, $				;loop until TI is set
-	CLR TI					;clear TI
-	SETB RI					;set RI
-	SJMP RECEIVE			;jump to receive data
+L1: JNB TI, L1
+	CLR TI
+	SJMP SERIAL
 
-FINISH:
-	RET						;return
-
-CONSTANTS:
-	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
-	UART_DATA EQU 64 ; where recieved UART data is stored in ram
-	RS EQU P1.3
-	E EQU P1.2
+FINISH_SERIAL:
+	RET
 
 LCD_SETUP:
 	;LCD P1, P1.2 = ENABLE, P1.3 = REGISTER SELECT
@@ -95,6 +76,24 @@ LCD_SETUP:
 	CALL DISP_CON; 		turn display and cursor on/off
 
 	RET ;LCD READY FOR DATA INPUT
+
+STARTUP:
+	MOV DPTR, #START_STR	;make data pointer point to where the start string is
+	ACALL SERIAL					;force the serial interrupt
+	MOV DPTR, #START_STR	;make data pointer point to where the start string is
+	ACALL WRITE_STRING
+	RET
+
+WRITE_STRING:
+	CLR A
+	MOVC A, @A + DPTR		;move the next character into the accumulator
+	INC DPTR				;increment the data pointer
+	CJNE A, #0DH, WRITE		;the last value is sent so the function returns else jump to write char
+	RET
+WRITE:
+	ACALL LCD_WRITE_CHAR	;write character to LCD
+	SJMP WRITE_STRING
+
 
 KEY_PAD_ENTRY:
 	CLR P0.3		;clear row 3
