@@ -16,6 +16,9 @@ MAIN:
 	ACALL UART_SETUP	;setup UART
 	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
 	;ACALL KEY_PAD_ENTRY	;recieve keypad entry and display it on the LCD
+	ACALL ACCESS_GRANTED
+	ACALL ACCESS_DENIED
+	ACALL LOCK_DOWN
 	MOV P1, #0FFH		;make sure all of the LEDs are off
 	ACALL LED_ANIMATION	;do a 5 second LED animation
 	MOV R1, #30H		;set R1 to be the RAM location 30H
@@ -77,10 +80,41 @@ LCD_SETUP:
 
 	RET ;LCD READY FOR DATA INPUT
 
+CLEAR_LCD:
+	CLR RS
+	MOV A, #1
+	ACALL LCD_WRITE_CHAR
+	SETB RS
+	RET
+
 STARTUP:
 	MOV DPTR, #START_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #START_STR	;make data pointer point to where the start string is
+	ACALL WRITE_STRING
+	RET
+
+ACCESS_GRANTED:
+	ACALL CLEAR_LCD
+	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
+	ACALL SERIAL					;force the serial interrupt
+	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
+	ACALL WRITE_STRING
+	RET
+
+ACCESS_DENIED:
+	ACALL CLEAR_LCD
+	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
+	ACALL SERIAL					;force the serial interrupt
+	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
+	ACALL WRITE_STRING
+	RET
+
+LOCK_DOWN:
+	ACALL CLEAR_LCD
+	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
+	ACALL SERIAL					;force the serial interrupt
+	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
 	RET
 
