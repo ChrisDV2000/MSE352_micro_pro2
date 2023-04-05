@@ -134,12 +134,14 @@ ENTRY_MODE:
 	RIGHT_CODE:
 		ACALL LCD_CURSOR_POS	;Moving the cursor to the next line
 		SETB RS			;Selecting data register, RS=1
+		ACALL LED_ANIMATION
 		ACALL ACCESS_GRANTED
 
 	;If the PIN is wrong
 	WRONG_CODE:
 		ACALL LCD_CURSOR_POS	;Moving the cursor to the next
 		SETB RS			;Selecting data register, RS=1
+		ACALL LED_ANIMATION
 		ACALL ACCESS_DENIED
 
 	CHECK_INPUT:
@@ -398,7 +400,6 @@ LED_ANIMATION:
 	CLR P1.1
 	ACALL LED_DELAY
 	CLR P1.0
-	ACALL LED_DELAY
 	MOV P1, #0FFH		;shut all of the LEDs off
 	RET
 
