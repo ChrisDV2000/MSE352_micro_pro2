@@ -1,8 +1,8 @@
 ORG 30H
 
-MAIN:
 	ACALL LCD_SETUP		;setup LCD display
 	ACALL UART_SETUP	;setup UART
+MAIN:
 	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
 	MOV R6, #4H
 LCK_LOOP:
@@ -384,6 +384,7 @@ LOCK_DOWN:
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
 	ACALL DELAY_3MIN
+	ACALL CLEAR_LCD
 	JMP MAIN
 
 DELAY_3MIN:
