@@ -9,9 +9,6 @@ LCK_LOOP:
 	DJNZ R6, PIN_INPUT		;allows user 3 attempts to input a password
 	ACALL LOCK_DOWN
 
-QUIT:
-	JMP $	;infinite loop
-
 ;-------------End of Main--------------
 
 ;-----------Setup Functions------------
@@ -365,7 +362,9 @@ ACCESS_GRANTED:
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
-	ACALL QUIT
+	ACALL DELAY_3MIN
+	ACALL CLEAR_LCD
+	JMP MAIN
 
 ACCESS_DENIED:
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
