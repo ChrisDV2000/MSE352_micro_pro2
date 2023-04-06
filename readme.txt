@@ -65,3 +65,42 @@ Christopher:
             for the busy flag to clear and the LCD display displays the character.
 
 Aqeeb:
+
+
+
+Implemented:
+
+    UART
+    Keypad
+    2 second loading bar LED Animation
+    LCD Display
+    3 min Lock Down period
+    3 password attempts 
+    
+
+Not Implemented:
+
+    Optional Door Animation:
+
+        We did not implement the optional door opening animation.
+
+    5 second LED Animation
+
+        We did not implement a 5 second loading animation we used 2 seconds instead because the 5 seconds was taking quite a long to run on the simulation.
+
+Known Bugs:
+
+    Keypad refresh rate:
+
+        When we have the simulation running the simulator update frequency needs to run quite slow in order for the buttons on the keypad to work.
+        This means that while our code is running the update frequency needs to be changed because it will take so long to run the delays at those slower speeds.
+
+    LCD Unwanted Character:
+
+        When we write to the second line of the LCD display we have an issue with a comma being displayed before the message that was intended. We could not figure 
+        out what was causing this.
+
+    Clearing UART:
+
+        We could not figure out if it was possible to clear the external UART from the 8051 this meant that the UART message kept getting longer and provided more of a 
+        log of messages instead of having a current point in the code which is displayed on the LCD.
