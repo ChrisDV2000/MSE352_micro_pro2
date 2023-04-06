@@ -1,13 +1,13 @@
 ORG 30H
 
-MAIN:
 	ACALL LCD_SETUP		;setup LCD display
 	ACALL UART_SETUP	;setup UART
+MAIN:
 	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
-	ACALL PIN_INPUT		;allows user 3 attempts to input a password
-
-QUIT:
-	JMP $	;infinite loop
+	MOV R6, #4H
+LCK_LOOP:
+	DJNZ R6, PIN_INPUT		;allows user 3 attempts to input a password
+	ACALL LOCK_DOWN
 
 ;-------------End of Main--------------
 
@@ -303,7 +303,7 @@ CLEAR_LCD:
 	CLR RS
 	MOV A, #1
 	ACALL LCD_WRITE_CHAR
-	SETB RS
+	ACALL DISP_CON
 	RET
 
 LCD_WRITE_CHAR:
@@ -362,22 +362,39 @@ ACCESS_GRANTED:
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
-	ACALL QUIT
+	ACALL DELAY_3MIN
+	ACALL CLEAR_LCD
+	JMP MAIN
 
 ACCESS_DENIED:
-	;ACALL CLEAR_LCD
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
-	RET
+	ACALL LED_DELAY
+	ACALL CLEAR_LCD
+	ACALL STARTUP
+	JMP LCK_LOOP
 
 LOCK_DOWN:
-	;ACALL CLEAR_LCD
+	ACALL CLEAR_LCD
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
+	ACALL DELAY_3MIN
+	ACALL CLEAR_LCD
+	JMP MAIN
+
+DELAY_3MIN:
+	MOV R0, #140
+ALSO_HERE: MOV R1, #79
+AGAIN_HERE: MOV R2, #60
+HERE: MOV R3, #125
+	DJNZ R3, $
+	DJNZ R2, HERE
+	DJNZ R1, AGAIN_HERE
+	DJNZ R0, ALSO_HERE
 	RET
 
 ;=================LEDs=================
@@ -404,11 +421,11 @@ LED_ANIMATION:
 
 LED_DELAY:	; 0.25 second delay
 	MOV R2, #2	;load 2 for 2 seconds overall or 5 for 5 seconds overall
-HERE_AGAIN: MOV R1, #239
-HERE: MOV R0, #241
+HERE_AGAIN1: MOV R1, #239
+HERE1: MOV R0, #241
 	DJNZ R0, $
-	DJNZ R1, HERE
-	DJNZ R2, HERE_AGAIN
+	DJNZ R1, HERE1
+	DJNZ R2, HERE_AGAIN1
 	RET
 
 ORG 400H
