@@ -418,11 +418,11 @@ LED_ANIMATION:
 
 LED_DELAY:	; 0.25 second delay
 	MOV R2, #2	;load 2 for 2 seconds overall or 5 for 5 seconds overall
-HERE_AGAIN: MOV R1, #239
-HERE: MOV R0, #241
+HERE_AGAIN1: MOV R1, #239
+HERE1: MOV R0, #241
 	DJNZ R0, $
-	DJNZ R1, HERE
-	DJNZ R2, HERE_AGAIN
+	DJNZ R1, HERE1
+	DJNZ R2, HERE_AGAIN1
 	RET
 
 ORG 400H
