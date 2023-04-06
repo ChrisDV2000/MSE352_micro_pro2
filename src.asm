@@ -5,7 +5,7 @@ MAIN:
 	ACALL UART_SETUP	;setup UART
 	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
 	MOV R3, #3H
-LCK LOOP:
+LCK_LOOP:
 	DJNZ R3, PIN_INPUT		;allows user 3 attempts to input a password
 	ACALL LOCK_DOWN
 
