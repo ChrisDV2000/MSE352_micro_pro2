@@ -64,6 +64,12 @@ Christopher:
             used to transmit data and we have 8 bits to transmit we send the data in two 4 bit chuncks on P1.4-P1.7 with two clock cycles. We then wait 
             for the busy flag to clear and the LCD display displays the character.
 
+        Lock Down
+
+            To implement the lock down I put the keypad code in a loop with a register that had counted down everytime the loop ran. This allowed us to have 3 password 
+            attempts and then go into a 3 min lock down. After the lock down the main code repeated and the user got 3 more tries. The 3 min delay was also implemented 
+            when the user got the password right the door remained "unlocked" for 3 min and then "locks" and goes back to the beginning of the code.
+
 Aqeeb:
 
 	Key pad input and LCD display:
@@ -74,4 +80,42 @@ Aqeeb:
 	In this process, I make use of 2 counter, on set to count the number of digits entered using the key pad. This is set to 5 and the program moves forward when the user enters the "#" symbol as the last pin. Then we call the subroutine to check for the correctness of the PIN, which makes use of the second counter. 
 	The subroutine checks for the correctness of the code from the Look-up table that is set, which stores the correct PIN in the memory. The subroutine then checks individually the PIN entered and increases the count if the PIN entered matches the PIN that is set. Once the both the counter are equal the access is granted, if not the access is denied. 
 	During this process, we set up a data register for the LCD display which displays the "*" every time a key is pressed on the key pad.
-	
+
+
+Implemented:
+
+    UART
+    Keypad
+    2 second loading bar LED Animation
+    LCD Display
+    3 min Lock Down period
+    3 password attempts 
+    
+
+Not Implemented:
+
+    Optional Door Animation:
+
+        We did not implement the optional door opening animation.
+
+    5 second LED Animation
+
+        We did not implement a 5 second loading animation we used 2 seconds instead because the 5 seconds was taking quite a long to run on the simulation.
+
+Known Bugs:
+
+    Keypad refresh rate:
+
+        When we have the simulation running the simulator update frequency needs to run quite slow in order for the buttons on the keypad to work.
+        This means that while our code is running the update frequency needs to be changed because it will take so long to run the delays at those slower speeds.
+
+    LCD Unwanted Character:
+
+        When we write to the second line of the LCD display we have an issue with a comma being displayed before the message that was intended. We could not figure 
+        out what was causing this.
+
+    Clearing UART:
+
+        We could not figure out if it was possible to clear the external UART from the 8051 this meant that the UART message kept getting longer and provided more of a 
+        log of messages instead of having a current point in the code which is displayed on the LCD.
+
