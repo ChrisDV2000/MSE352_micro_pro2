@@ -13,7 +13,7 @@ User requirements
 - [x] If the passcode was entered correctly, the system will show "Access Granted"  on the LCD and UART.
 Optional: You can also imitate a door opening animation on the LEDs or LCD here.
 - [x] If the passcode was entered incorrectly, the system will show "Access Denied" on the LCD and UART.
- - [ ] If the passcode was entered incorrectly 3-times in a row, the system will go in "LOCK DOWN" mode and show that on LCD and UART for 3 minutes before allowing the user to try again. 
+ - [x] If the passcode was entered incorrectly 3-times in a row, the system will go in "LOCK DOWN" mode and show that on LCD and UART for 3 minutes before allowing the user to try again. 
 
 ### Deliverables
 - Professional grade assembly code, fully commented and structured
