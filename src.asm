@@ -5,7 +5,6 @@ MAIN:
 	ACALL UART_SETUP	;setup UART
 	ACALL STARTUP		;display "Enter Password" on both UART and the LCD
 	ACALL PIN_INPUT		;allows user 3 attempts to input a password
-	ACALL LED_ANIMATION	;do a 5 second LED animation
 
 QUIT:
 	JMP $	;infinite loop
@@ -358,15 +357,15 @@ STARTUP:
 	RET
 
 ACCESS_GRANTED:
-	ACALL CLEAR_LCD
+	;ACALL CLEAR_LCD
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #ACCESS_STR	;make data pointer point to where the start string is
 	ACALL WRITE_STRING
-	RET
+	ACALL QUIT
 
 ACCESS_DENIED:
-	ACALL CLEAR_LCD
+	;ACALL CLEAR_LCD
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #DENIED_STR	;make data pointer point to where the start string is
@@ -374,7 +373,7 @@ ACCESS_DENIED:
 	RET
 
 LOCK_DOWN:
-	ACALL CLEAR_LCD
+	;ACALL CLEAR_LCD
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
 	ACALL SERIAL					;force the serial interrupt
 	MOV DPTR, #LOCK_STR	;make data pointer point to where the start string is
@@ -403,31 +402,26 @@ LED_ANIMATION:
 	MOV P1, #0FFH		;shut all of the LEDs off
 	RET
 
-LED_DELAY:	; 0.625 second delay
-	MOV TMOD, #01H
-	MOV R5, #11
-	MOV TL0, #00H
-	MOV TH0, #00H
-	SETB TR0
-	CHECK_OF:
-		JNB TF0, CHECK_OF
-		CLR TF0
-		DJNZ R5, CHECK_OF
-		CLR TR0
-		RET
+LED_DELAY:	; 0.25 second delay
+	MOV R2, #2	;load 2 for 2 seconds overall or 5 for 5 seconds overall
+HERE_AGAIN: MOV R1, #239
+HERE: MOV R0, #241
+	DJNZ R0, $
+	DJNZ R1, HERE
+	DJNZ R2, HERE_AGAIN
+	RET
 
-
-ORG 1000H
+ORG 400H
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
 	UART_DATA EQU 64 ; where recieved UART data is stored in ram
 	RS EQU P1.3
 	E EQU P1.2
-	START_STR: DB 'E','n','t','e','r',' ','P','a','s','s','c','o','d','e',':',0DH,0
-	ACCESS_STR: DB 'A','c','c','e','s','s',' ','G','r','a','n','t','e','d',0DH,0
-	DENIED_STR: DB 'A','c','c','e','s','s',' ','D','e','n','i','e','d',0DH,0
+	START_STR: DB 'E','n','t','e','r',' ','P','i','n',':',0DH,0
+	ACCESS_STR: DB ' ','A','c','c','e','s','s',' ','G','r','a','n','t','e','d',0DH,0
+	DENIED_STR: DB ' ','A','c','c','e','s','s',' ','D','e','n','i','e','d',0DH,0
 	LOCK_STR: DB 'L','O','C','K',' ','D','O','W','N',0DH,0
 
-ORG 1200H
+ORG 500H
 	LUT4:	DB '0', '3', '5', '2', 0
 
 END
