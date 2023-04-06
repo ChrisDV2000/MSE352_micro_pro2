@@ -4,7 +4,7 @@ Dr. Amr Marzouk
 April 6, 2023
 
 Christopher Van Vugt 301448322
-Aqeeb
+Mohammed Aqeeb Akbar 301385212
 
 Contributions:
 
@@ -65,3 +65,13 @@ Christopher:
             for the busy flag to clear and the LCD display displays the character.
 
 Aqeeb:
+
+	Key pad input and LCD display:
+	As a requirement for the project, the program displays a message "Enter PIN:" and the user is required to punch in the 4 digit PIN followed by the "#" symbol using the key pad. The program checks for the correctness of the PIN and accordingly displays the message for either "Access Granted" or "Access Denied".
+	To make the PIN censored, when the user enters the PIN, the LCD displays the "*" instead of the actual PIN.
+	Starting off, we select the instruction set for the program, like setting the LCD to 4 bit mode, turn on the display and make the cursor blink, and shift the cursor to the right after every character displayed on the LCD.
+	After the function is set, the program displays the "Enter PIN:" message on the display, waiting for the user to enter the 4 digit pin.
+	In this process, I make use of 2 counter, on set to count the number of digits entered using the key pad. This is set to 5 and the program moves forward when the user enters the "#" symbol as the last pin. Then we call the subroutine to check for the correctness of the PIN, which makes use of the second counter. 
+	The subroutine checks for the correctness of the code from the Look-up table that is set, which stores the correct PIN in the memory. The subroutine then checks individually the PIN entered and increases the count if the PIN entered matches the PIN that is set. Once the both the counter are equal the access is granted, if not the access is denied. 
+	During this process, we set up a data register for the LCD display which displays the "*" every time a key is pressed on the key pad.
+	
