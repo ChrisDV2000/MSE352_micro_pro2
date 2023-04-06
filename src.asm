@@ -402,19 +402,14 @@ LED_ANIMATION:
 	MOV P1, #0FFH		;shut all of the LEDs off
 	RET
 
-LED_DELAY:	; 0.625 second delay
-	MOV TMOD, #01H
-	MOV R3, #11
-	MOV TL0, #00H
-	MOV TH0, #00H
-	SETB TR0
-	CHECK_OF:
-		JNB TF0, CHECK_OF
-		CLR TF0
-		DJNZ R3, CHECK_OF
-		CLR TR0
-		RET
-
+LED_DELAY:	; 0.25 second delay
+	MOV R2, #2	;load 2 for 2 seconds overall or 5 for 5 seconds overall
+HERE_AGAIN: MOV R1, #239
+HERE: MOV R0, #241
+	DJNZ R0, $
+	DJNZ R1, HERE
+	DJNZ R2, HERE_AGAIN
+	RET
 
 ORG 400H
 	BUSY_FLAG_TIME EQU 25	; the amount of time needed to clear the LCD busy flag
