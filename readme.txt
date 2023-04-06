@@ -64,6 +64,12 @@ Christopher:
             used to transmit data and we have 8 bits to transmit we send the data in two 4 bit chuncks on P1.4-P1.7 with two clock cycles. We then wait 
             for the busy flag to clear and the LCD display displays the character.
 
+        Lock Down
+
+            To implement the lock down I put the keypad code in a loop with a register that had counted down everytime the loop ran. This allowed us to have 3 password 
+            attempts and then go into a 3 min lock down. After the lock down the main code repeated and the user got 3 more tries. The 3 min delay was also implemented 
+            when the user got the password right the door remained "unlocked" for 3 min and then "locks" and goes back to the beginning of the code.
+
 Aqeeb:
 
 
